@@ -96,7 +96,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 
 [Document5]
-DocumentPath=C:\Documents and Settings\All Users\Документы\Altium\AD\Library\Miscellaneous Devices.IntLib
+DocumentPath=..\..\..\..\Documents and Settings\All Users\Документы\Altium\AD\Library\Miscellaneous Devices.IntLib
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
