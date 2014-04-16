@@ -41,7 +41,7 @@ int main()
   ConfigLedManager();
   ConfigKernel();
   
-  Add_Task(500, TRUE, ExecKernel);
+  Add_Task(200, TRUE, ExecKernel);
   Add_Task(7, TRUE, ExecLedMgr);
   for (;;){
     Check_Tasks();

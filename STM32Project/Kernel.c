@@ -19,11 +19,11 @@ typedef enum {
 }KernelStates;
 KernelStates State;
 
-#define Step 3
+#define Step 1
 TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 TIM_OCInitTypeDef  TIM_OCInitStructure;
 uint16_t TimerPeriod = 255-Step;
-uint16_t Channel2CCR = Step;
+uint16_t Channel2CCR = Step+1;
 float Current;
 float Voltage;
 __IO uint16_t RegularConvData_Tab[2];
@@ -195,7 +195,8 @@ void ExecKernel(u8 task_number)
       Voltage=adcVoltage*11;
       //из милливольт получаем вольты
       Voltage/=1000;
-      if (Current>6.3F)
+      if (Current>6.3F ||
+          Voltage>15.0F)
       {
           DownZeroCurrent();
           /* Clear DMA TC flag */
@@ -226,18 +227,24 @@ void ExecKernel(u8 task_number)
       displayMode=1;
     }else if (displayMode==1)
     {
+      displayMode=2;  
+    }else if (displayMode==2)
+    {
       displayMode=0;  
     }
     
   }
+  
   
   if (displayMode==0)
   {
     DisplayLedDigitsFloat(Current);
   }else if (displayMode==1){
     DisplayLedDigits((u8)Voltage);
+  }else if (displayMode==2){
+    float decVolt=Voltage-(u8)Voltage;
+    DisplayLedDigits((u8)(decVolt*10));
   }
-
 
   
 }
@@ -264,7 +271,7 @@ void DownCurrent(){
 }
 
 void DownZeroCurrent(){
-    Channel2CCR=Step;
+    Channel2CCR=Step+1;
     doUpdate();
 }
 
