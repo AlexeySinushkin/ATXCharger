@@ -28,6 +28,7 @@ float Current;
 float Voltage;
 __IO uint16_t RegularConvData_Tab[2];
 #define ADC1_DR_Address                0x40012440
+#define INVERSEN
 void ConfigKernel()
 {
 
@@ -133,13 +134,21 @@ void ConfigKernel()
   /* Channel 2 Configuration in PWM mode */
   TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
   TIM_OCInitStructure.TIM_Pulse = Channel2CCR;
-  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
   TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;
+  //TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable; //Not use N port
+  
+#ifdef INVERSEN  
   TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;
-  TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High;
+  //TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High; //Not use N port
   TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Set;
-  TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Reset;  
+  //TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Reset; //Not use N port
+#else
+  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+  //TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_Low; //Not use N port
+  TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Reset;
+  //TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Set; //Not use N port 
+#endif
+  
   
   TIM_OC2Init(TIM2, &TIM_OCInitStructure);
 
