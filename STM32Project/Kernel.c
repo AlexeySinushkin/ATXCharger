@@ -19,15 +19,16 @@ typedef enum {
 }KernelStates;
 KernelStates State;
 
-#define Step 3
+#define Step 1
 TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 TIM_OCInitTypeDef  TIM_OCInitStructure;
 uint16_t TimerPeriod = 255-Step;
-uint16_t Channel2CCR = Step;
+uint16_t Channel2CCR = Step+1;
 float Current;
 float Voltage;
 __IO uint16_t RegularConvData_Tab[2];
 #define ADC1_DR_Address                0x40012440
+#define INVERSEN
 void ConfigKernel()
 {
 
@@ -133,13 +134,21 @@ void ConfigKernel()
   /* Channel 2 Configuration in PWM mode */
   TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
   TIM_OCInitStructure.TIM_Pulse = Channel2CCR;
-  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
   TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;
+  //TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable; //Not use N port
+  
+#ifdef INVERSEN  
   TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;
-  TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High;
+  //TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High; //Not use N port
   TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Set;
-  TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Reset;  
+  //TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Reset; //Not use N port
+#else
+  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+  //TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_Low; //Not use N port
+  TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Reset;
+  //TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Set; //Not use N port 
+#endif
+  
   
   TIM_OC2Init(TIM2, &TIM_OCInitStructure);
 
@@ -195,7 +204,8 @@ void ExecKernel(u8 task_number)
       Voltage=adcVoltage*11;
       //из милливольт получаем вольты
       Voltage/=1000;
-      if (Current>6.3F)
+      if (Current>6.3F ||
+          Voltage>15.0F)
       {
           DownZeroCurrent();
           /* Clear DMA TC flag */
@@ -226,18 +236,24 @@ void ExecKernel(u8 task_number)
       displayMode=1;
     }else if (displayMode==1)
     {
+      displayMode=2;  
+    }else if (displayMode==2)
+    {
       displayMode=0;  
     }
     
   }
+  
   
   if (displayMode==0)
   {
     DisplayLedDigitsFloat(Current);
   }else if (displayMode==1){
     DisplayLedDigits((u8)Voltage);
+  }else if (displayMode==2){
+    float decVolt=Voltage-(u8)Voltage;
+    DisplayLedDigits((u8)(decVolt*10));
   }
-
 
   
 }
@@ -264,7 +280,7 @@ void DownCurrent(){
 }
 
 void DownZeroCurrent(){
-    Channel2CCR=Step;
+    Channel2CCR=Step+1;
     doUpdate();
 }
 
