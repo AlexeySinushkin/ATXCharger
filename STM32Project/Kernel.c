@@ -26,6 +26,33 @@ KernelStates State;
 //тем выше напряжение на выходе DAC
 #define INVERSEN
 
+//#define ATX
+#define LIT
+
+#ifdef ATX
+
+#define DANGER_CURRENT  9.3F
+#define DANGER_VOLTAGE  16.0F
+#define LOW_CURRENT     5.0F
+#define HIGH_CURRENT    6.5F
+#define LOW_VOLTAGE     15.2F
+#define HIGH_VOLTAGE    15.6F
+
+#else
+
+#define DANGER_CURRENT  0.3F
+#define DANGER_VOLTAGE  4.3F
+#define LOW_CURRENT     0.01F
+#define HIGH_CURRENT    0.1F
+#define LOW_VOLTAGE     4.1F
+#define HIGH_VOLTAGE    4.2F
+
+#endif
+
+//сопротивление шунта 2.5Е-03
+//R010 - это 0.01 Ома 10E-03
+#define SHUNT 10
+
 TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 TIM_OCInitTypeDef  TIM_OCInitStructure;
 #define TimerStart  2
@@ -199,7 +226,8 @@ void ExecKernel(u8 task_number)
 
       //I = U/R
       //сопротивление шунта 2.5Е-03
-      Current = (float)adcCurrent/2.5F;
+      //0.01 10E-03
+      Current = (float)adcCurrent/SHUNT;
       //делим на коэффициент усиления ОУ
       Current/=100;
 
@@ -210,19 +238,19 @@ void ExecKernel(u8 task_number)
       Voltage=adcVoltage*11;
       //из милливольт получаем вольты
       Voltage/=1000;
-      if (Current>9.3F ||
-          Voltage>15.0F)
+      if (Current>DANGER_CURRENT ||
+          Voltage>DANGER_VOLTAGE)
       {
           DownZeroCurrent();
           /* Clear DMA TC flag */
       }else{
-        if (Voltage<14.2F){
-            if (Current<5.0F){
+        if (Voltage<LOW_VOLTAGE){
+            if (Current<LOW_CURRENT){
               UpCurrent();
-            }else if (Current>6.5F){
+            }else if (Current>HIGH_CURRENT){
               DownCurrent();
             }
-        }else if (Voltage>14.5F){
+        }else if (Voltage>HIGH_VOLTAGE){
           DownCurrent();        
         }
       }
@@ -249,7 +277,7 @@ void ExecKernel(u8 task_number)
     
   }
   
-  displayMode=0;
+  
   
   if (displayMode==0)
   {
