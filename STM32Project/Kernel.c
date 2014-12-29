@@ -31,19 +31,19 @@ KernelStates State;
 
 #ifdef ATX
 
-#define DANGER_CURRENT  9.3F
+#define DANGER_CURRENT  6.5F
 #define DANGER_VOLTAGE  16.0F
 #define LOW_CURRENT     5.0F
-#define HIGH_CURRENT    6.5F
-#define LOW_VOLTAGE     15.2F
+#define HIGH_CURRENT    6.1F
+#define LOW_VOLTAGE     15.0F
 #define HIGH_VOLTAGE    15.6F
 
 #else
 
-#define DANGER_CURRENT  0.3F
+#define DANGER_CURRENT  0.5F
 #define DANGER_VOLTAGE  4.3F
-#define LOW_CURRENT     0.01F
-#define HIGH_CURRENT    0.1F
+#define LOW_CURRENT     0.41F
+#define HIGH_CURRENT    0.45F
 #define LOW_VOLTAGE     4.1F
 #define HIGH_VOLTAGE    4.2F
 
@@ -51,7 +51,8 @@ KernelStates State;
 
 //сопротивление шунта 2.5Е-03
 //R010 - это 0.01 Ома 10E-03
-#define SHUNT 10
+//#define SHUNT 10.0
+#define SHUNT 10.0
 
 TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 TIM_OCInitTypeDef  TIM_OCInitStructure;
@@ -277,8 +278,8 @@ void ExecKernel(u8 task_number)
     
   }
   
-  
-  
+#ifdef ATX
+  displayMode=0;
   if (displayMode==0)
   {
     DisplayLedDigitsFloat(Current);
@@ -289,7 +290,16 @@ void ExecKernel(u8 task_number)
     //DisplayLedDigits((u8)(decVolt*10));
     DisplayLedDigits((u8)Channel2CCR);
   }
-
+#else
+  if (displayMode==0)
+  {
+    DisplayLedDigitsFloat(Current);
+  }else if (displayMode==1){
+    DisplayLedDigitsFloat(Voltage);
+  }else if (displayMode==2){
+    DisplayLedDigits((u8)Channel2CCR);
+  }
+#endif
   
 }
 
